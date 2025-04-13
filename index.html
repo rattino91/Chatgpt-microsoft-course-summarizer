@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generatore Riassunti Corsi Microsoft</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+        .form-group { margin-bottom: 15px; }
+        select, button { width: 100%; padding: 10px; margin-top: 5px; }
+        button { background: #0078d4; color: white; border: none; cursor: pointer; }
+        #risultato { margin-top: 20px; padding: 15px; border: 1px solid #ddd; display: none; }
+    </style>
+</head>
+<body>
+    <h1>Generatore Riassunti Corsi Microsoft</h1>
+    
+    <div class="form-group">
+        <label for="corso">Seleziona corso:</label>
+        <select id="corso">
+            <option value="">-- Seleziona --</option>
+            {% for id, corso in corsi.items() %}
+                <option value="{{ id }}">{{ corso['nome'] }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    
+    <div class="form-group">
+        <label for="tipo_riassunto">Tipo di riassunto:</label>
+        <select id="tipo_riassunto">
+            {% for tipo in tipi_riassunto %}
+                <option value="{{ tipo['id'] }}">{{ tipo['nome'] }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    
+    <button id="genera">Genera Riassunto</button>
+    
+    <div id="risultato">
+        <h3>Prompt Generato:</h3>
+        <p id="prompt"></p>
+        <h3>Riassunto:</h3>
+        <pre id="riassunto"></pre>
+        <a id="download" href="#" download>Scarica Riassunto</a>
+    </div>
+
+    <script>
+        document.getElementById('genera').addEventListener('click', async () => {
+            const corso = document.getElementById('corso').value;
+            const tipo = document.getElementById('tipo_riassunto').value;
+            
+            if (!corso) {
+                alert('Seleziona un corso');
+                return;
+            }
+            
+            const response = await fetch('/genera_riassunto', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ corso_id: corso, tipo_riassunto: tipo })
+            });
+            
+            const data = await response.json();
+            
+            if (data.errore) {
+                alert(data.errore);
+                return;
+            }
+            
+            document.getElementById('prompt').textContent = data.prompt;
+            document.getElementById('riassunto').textContent = data.riassunto;
+            
+            // Configura download
+            const blob = new Blob([data.riassunto], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            document.getElementById('download').href = url;
+            document.getElementById('download').download = data.nome_file;
+            
+            document.getElementById('risultato').style.display = 'block';
+        });
+    </script>
+</body>
+</html>
