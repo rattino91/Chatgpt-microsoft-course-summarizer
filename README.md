@@ -86,15 +86,6 @@ Setup Instructions
 4. Run application:
    run the script
 
-File Structure
--------------
-project/
-├── templates/
-│   └── index.html
-├── .env
-├── deepseek.py (main application)
-└── requirements.txt
-
 Notes
 -----
 • Keep your .env file private
